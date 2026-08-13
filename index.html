@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aplikasi Undian Acak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior-y: contain; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom animation for the rolling numbers */
+        @keyframes roll {
+            0% { transform: translateY(-50px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(50px); opacity: 0; }
+        }
+        
+        .rolling {
+            animation: roll 0.1s linear infinite;
+        }
+        
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Hide number input arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 min-h-screen text-white flex flex-col">
+
+    <header class="p-4 text-center flex flex-col items-center">
+        <img src="https://sdnteluknaga1.github.io/Tesa/img/LOGO%20SD.png" alt="Logo SD" class="h-20 w-auto mb-2 drop-shadow-md">
+        <h1 class="text-3xl md:text-4xl font-bold tracking-wider drop-shadow-md">UNDIAN ACAK KURSI</h1>
+        <p class="text-indigo-200 mt-1 text-sm md:text-base">Duduk sesuai undian</p>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <!-- Main Application Card -->
+        <div class="glassmorphism rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden flex flex-col items-center">
+            
+            <!-- Background decoration -->
+            <div class="absolute -top-16 -right-16 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+            <div class="absolute -bottom-16 -left-16 w-32 h-32 bg-indigo-500 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
+
+            <div class="w-full flex justify-between items-center gap-4 mb-8 relative z-10 bg-black/20 p-4 rounded-2xl border border-white/10">
+                <div class="flex-1 flex flex-col items-center">
+                    <label for="min-num" class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200 mb-2 font-semibold">Min</label>
+                    <input type="number" id="min-num" value="1" class="w-full bg-transparent border-b-2 border-white/30 py-2 px-1 text-white text-3xl sm:text-4xl font-bold text-center focus:outline-none focus:border-purple-400 transition-colors placeholder-white/30" placeholder="0">
+                </div>
+                
+                <div class="text-white/50 text-2xl font-light">
+                    -
+                </div>
+
+                <div class="flex-1 flex flex-col items-center">
+                    <label for="max-num" class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200 mb-2 font-semibold">Max</label>
+                    <input type="number" id="max-num" value="100" class="w-full bg-transparent border-b-2 border-white/30 py-2 px-1 text-white text-3xl sm:text-4xl font-bold text-center focus:outline-none focus:border-purple-400 transition-colors placeholder-white/30" placeholder="100">
+                </div>
+            </div>
+
+            <div class="w-full bg-black/30 rounded-2xl p-6 mb-8 relative flex items-center justify-center h-48 sm:h-56 shadow-inner border border-white/10 overflow-hidden z-10">
+                <div id="result-display" class="text-6xl sm:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-500 drop-shadow-[0_0_15px_rgba(253,224,71,0.5)] transition-all duration-300">
+                    ?
+                </div>
+            </div>
+
+            <div class="w-full flex flex-col gap-3 relative z-10">
+                <button id="draw-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-bold py-4 rounded-full text-xl shadow-[0_0_20px_rgba(139,92,246,0.5)] transform transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ACAK SEKARANG
+                </button>
+                
+                <button id="reset-btn" class="w-full bg-white/10 hover:bg-white/20 text-indigo-100 font-semibold py-3 rounded-full text-sm transition-all border border-white/10 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reset Input
+                </button>
+            </div>
+            
+            <!-- History section -->
+            <div id="history-container" class="w-full mt-6 hidden z-10">
+                <h3 class="text-xs uppercase tracking-wider text-indigo-200 mb-2 font-semibold text-center">Riwayat Undian</h3>
+                <div class="flex flex-wrap justify-center gap-2" id="history-list">
+                    <!-- History badges will go here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-4 text-center text-xs text-indigo-300">
+        <p>Aplikasi Undian Acak Mobile Friendly</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const minInput = document.getElementById('min-num');
+            const maxInput = document.getElementById('max-num');
+            const resultDisplay = document.getElementById('result-display');
+            const drawBtn = document.getElementById('draw-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const historyContainer = document.getElementById('history-container');
+            const historyList = document.getElementById('history-list');
+
+            // State variables
+            let isRolling = false;
+            let rollInterval;
+            let drawHistory = [];
+
+            // Sound effect context (using AudioContext for simple beeps)
+            let audioCtx;
+            function playBeep(frequency, type, duration) {
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    oscillator.type = type;
+                    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + duration);
+                } catch(e) {
+                    console.log("Audio not supported or enabled yet");
+                }
+            }
+
+            function playTick() {
+                playBeep(800, 'square', 0.05);
+            }
+
+            function playTada() {
+                playBeep(523.25, 'triangle', 0.2); // C5
+                setTimeout(() => playBeep(659.25, 'triangle', 0.2), 100); // E5
+                setTimeout(() => playBeep(783.99, 'triangle', 0.4), 200); // G5
+            }
+
+            function startDraw() {
+                if (isRolling) return;
+
+                // Validate inputs
+                const min = parseInt(minInput.value);
+                const max = parseInt(maxInput.value);
+
+                if (isNaN(min) || isNaN(max)) {
+                    showError("Masukkan angka yang valid!");
+                    return;
+                }
+
+                if (min >= max) {
+                    showError("Angka Awal harus lebih kecil dari Angka Akhir!");
+                    return;
+                }
+                
+                if(max - min > 1000000) {
+                     showError("Rentang angka terlalu besar! (Max 1 juta)");
+                     return;
+                }
+
+                // Initialize AudioContext on first user interaction if needed
+                if (!audioCtx) {
+                    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+                }
+
+                isRolling = true;
+                drawBtn.disabled = true;
+                drawBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                drawBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    MENGACAK...
+                `;
+
+                resultDisplay.classList.add('rolling');
+
+                let ticks = 0;
+                const maxTicks = 30; // Number of "rolls" before stopping
+                const duration = 2000; // Total duration in ms
+                const intervalTime = duration / maxTicks;
+
+                rollInterval = setInterval(() => {
+                    const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                    resultDisplay.textContent = randomNum;
+                    
+                    if(ticks % 2 === 0) playTick();
+                    
+                    ticks++;
+
+                    if (ticks >= maxTicks) {
+                        clearInterval(rollInterval);
+                        finishDraw(min, max);
+                    }
+                }, intervalTime);
+            }
+
+            function finishDraw(min, max) {
+                isRolling = false;
+                resultDisplay.classList.remove('rolling');
+                
+                // Final result
+                const finalNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                resultDisplay.textContent = finalNum;
+                
+                // Add pop effect
+                resultDisplay.classList.add('scale-150');
+                setTimeout(() => {
+                    resultDisplay.classList.remove('scale-150');
+                }, 300);
+
+                // Play win sound and confetti
+                playTada();
+                triggerConfetti();
+
+                // Add to history
+                addToHistory(finalNum);
+
+                // Reset button state
+                drawBtn.disabled = false;
+                drawBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                drawBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-middle mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    ACAK LAGI
+                `;
+            }
+
+            function showError(message) {
+                const originalText = resultDisplay.textContent;
+                const originalSize = resultDisplay.className;
+                
+                resultDisplay.className = "text-xl sm:text-2xl font-bold text-red-400 text-center px-4";
+                resultDisplay.textContent = message;
+                
+                setTimeout(() => {
+                    resultDisplay.className = "text-6xl sm:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-300 to-yellow-500 drop-shadow-[0_0_15px_rgba(253,224,71,0.5)] transition-all duration-300";
+                    resultDisplay.textContent = originalText;
+                }, 2500);
+            }
+
+            function addToHistory(num) {
+                if (drawHistory.length === 0) {
+                    historyContainer.classList.remove('hidden');
+                }
+                
+                // Keep only last 8 numbers
+                drawHistory.unshift(num);
+                if (drawHistory.length > 8) {
+                    drawHistory.pop();
+                }
+
+                renderHistory();
+            }
+
+            function renderHistory() {
+                historyList.innerHTML = '';
+                drawHistory.forEach((num, index) => {
+                    const badge = document.createElement('div');
+                    // Newest is highlighted
+                    if (index === 0) {
+                        badge.className = 'bg-yellow-400 text-yellow-900 font-bold px-3 py-1 rounded-full text-sm shadow-md animate-pulse';
+                    } else {
+                        badge.className = 'bg-white/20 text-white font-medium px-3 py-1 rounded-full text-sm border border-white/10';
+                    }
+                    badge.textContent = num;
+                    historyList.appendChild(badge);
+                });
+            }
+
+            function triggerConfetti() {
+                if (typeof confetti === 'function') {
+                    var duration = 3 * 1000;
+                    var animationEnd = Date.now() + duration;
+                    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                    function randomInRange(min, max) {
+                        return Math.random() * (max - min) + min;
+                    }
+
+                    var interval = setInterval(function() {
+                        var timeLeft = animationEnd - Date.now();
+
+                        if (timeLeft <= 0) {
+                            return clearInterval(interval);
+                        }
+
+                        var particleCount = 50 * (timeLeft / duration);
+                        confetti(Object.assign({}, defaults, { particleCount,
+                            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                        }));
+                        confetti(Object.assign({}, defaults, { particleCount,
+                            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                        }));
+                    }, 250);
+                }
+            }
+
+            drawBtn.addEventListener('click', startDraw);
+
+            resetBtn.addEventListener('click', () => {
+                minInput.value = '1';
+                maxInput.value = '100';
+                resultDisplay.textContent = '?';
+                drawHistory = [];
+                historyContainer.classList.add('hidden');
+                historyList.innerHTML = '';
+                drawBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-middle mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ACAK SEKARANG
+                `;
+            });
+            
+            // Allow pressing 'Enter' on inputs to trigger draw
+            minInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') startDraw(); });
+            maxInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') startDraw(); });
+        });
+    </script>
+</body>
+</html>
